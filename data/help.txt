@@ -1,0 +1,71 @@
+
+Utility:
+
+• -github
+• -uptime
+• -botinfo
+• -status
+
+
+Moderation:
+
+• -mods
+• -help
+
+
+Fun:
+
+• -memes
+• -prank
+• -8ball
+• -trustfall
+• -catch
+
+
+Useful:
+• -temp
+• -newsSPLITHERE
+RP 1/3:
+
+• -amen
+• -beer
+• -belch
+• -blush
+• -coffee
+• -commie
+• -cough
+• -crabrave
+• -cricket
+• -cry
+• -dab
+• -devitoapproves
+• -f
+• -fbi
+• -holdbackSPLITHERE
+RP 2/3:
+• -johnpissed
+• -kiss
+• -laugh
+• -lonely
+• -naenae
+• -nervous
+• -news
+• -nice
+• -oink
+• -pout
+• -psspss
+• -rage
+• -reee
+• -rngSPLITHERE
+RP 3/3:
+
+• -scream
+• -shocked
+• -shrekapproves
+• -sneeze
+• -vibin
+• -vsco
+• -whatislove
+• -wheeze
+
+
