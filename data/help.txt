@@ -6,12 +6,10 @@ Utility:
 • -botinfo
 • -status
 
-
 Moderation:
 
 • -mods
 • -help
-
 
 Fun:
 
@@ -21,11 +19,11 @@ Fun:
 • -trustfall
 • -catch
 
-
 Useful:
 • -temp
+• -len
 • -newsSPLITHERE
-RP 1/3:
+RP:
 
 • -amen
 • -beer
@@ -41,8 +39,7 @@ RP 1/3:
 • -devitoapproves
 • -f
 • -fbi
-• -holdbackSPLITHERE
-RP 2/3:
+• -holdback
 • -johnpissed
 • -kiss
 • -laugh
@@ -56,9 +53,7 @@ RP 2/3:
 • -psspss
 • -rage
 • -reee
-• -rngSPLITHERE
-RP 3/3:
-
+• -rng
 • -scream
 • -shocked
 • -shrekapproves
