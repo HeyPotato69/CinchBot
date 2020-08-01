@@ -55,9 +55,8 @@ got.post({
 
 // Data
 let miscCommands = JSON.parse(fs.readFileSync("src/MiscCommands.json"));
-let quotes = JSON.parse(fs.readFileSync("data/quotes.json"));
 var helpMessages = fs.readFileSync("data/help.txt", encoding = "utf8").split("SPLITHERE");
-let newsMessageMessage = "Hottest news of the day: " + os.EOL + "Post Title: %(NEWSMESSAGETITLE)" + os.EOL + "Post Content: %(NEWSMESSAGELINK)" + os.EOL + "Link To Post: %(NEWSMESSAGELINKTOPOST)";
+let newsMessageMessage = "Hottest news of the day: " + os.EOL + os.EOL + "%(NEWSMESSAGETITLE)" + os.EOL + os.EOL + "Read more here %(NEWSMESSAGELINKTOPOST)";
 let ch = new sb.ChannelHandler();
 let newsMessage = async (count, channelUrl, channel) => {
 	if (isUndefined(channelUrl)) {
@@ -173,7 +172,7 @@ ch.onMessageReceived = async function(channel, message) {
 				sendMsgWithChannel(channel, "I'm sorry, this command is currently unavailable.");
 				break;
 			case "quote":
-				sendMsgWithChannel(channel, `"${quotes[Math.floor(Math.random() * quotes.length)].trim()}"`);
+				sendMsgWithChannel(channel, "I'm sorry, this command is currently unavailable.")
 				break;
 			case "addquote":
 				sendMsgWithChannel(channel, "I'm sorry, this command is currently unavailable.");
@@ -199,21 +198,21 @@ ch.onMessageReceived = async function(channel, message) {
 					sendMsgWithChannel(channel, `Your reddit ID is: ${message._sender.userId}`);
 				}
 				break;
-			
 			case "restart":
 				if ("thedefault1".includes(message._sender.nickname.toLowerCase())) {
 					sendMsgWithChannel(channel, "Restarting...");
-					console.log("Restarting pid  " + process.pid);
+					console.log(`Restarting ${userInfo.nickname}...\npid: ${process.pid}`);
 					setTimeout(function () {
     					process.on("exit", function () {
         					require("child_process").spawn(process.argv.shift(), process.argv, {
            					cwd: process.cwd(),
             				detached : true,
-							stdio: "inherit"	
+							stdio: "inherit"
+							
 						});
 						process.exit(1)
    					});
-    			process.exit(1);
+    			process.exit();
 				}, 5000);
 				}
 				else {
@@ -262,6 +261,26 @@ ch.onMessageReceived = async function(channel, message) {
 					let tempInput = Number(tempFormatted);
 					tempConverted = (tempInput - 32) / 1.8;
 					sendMsgWithChannel(channel, `${tempFormatted}F (Fahrenheit) is ${tempConverted.toFixed(1)}C (Celcius)`);
+				}
+				else {
+					sendMsgWithChannel(channel, "Invalid argument");
+				}
+				break;
+			case "len":
+				var userToGet = stringFromList(args);
+				
+				if (userToGet.includes("\"")) {
+					let tempFormatted = userToGet.replace('\"','');
+					let tempInput = Number(tempFormatted);
+					tempConverted = (tempInput * 2.54);
+					sendMsgWithChannel(channel, `${tempFormatted}" is ${tempConverted.toFixed(1)} cm`);
+				}
+				else if (userToGet.includes("cm")) {
+					let tempFormatted = userToGet.replace('cm','');
+					
+					let tempInput = Number(tempFormatted);
+					tempConverted = (tempInput / 2.54);
+					sendMsgWithChannel(channel, `${tempFormatted}cm is ${tempConverted.toFixed(1)}"`);
 				}
 				else {
 					sendMsgWithChannel(channel, "Invalid argument");
@@ -317,7 +336,7 @@ ch.onMessageReceived = async function(channel, message) {
 				};
 				setTimeout(() => {
 					if (!currentTrustfaller[channel.url].catched) {
-						sendMsgWithChannel(channel, message._sender.nickname + " Didn't get catched! Y'all are bad friends");
+						sendMsgWithChannel(channel, message._sender.nickname + " didn't get catched! Y'all are bad friends");
 					}
 					currentTrustfaller[channel.url].hasBeen10Secs = true;
 				}, 10000);
@@ -364,7 +383,7 @@ ch.onMessageReceived = async function(channel, message) {
 					returning = returning.replace("%(SENDER)", message._sender.nickname);
 					sendMsgWithChannel(channel, returning);
 				}
-				break;
+			break;
 		}
 	}
 }
