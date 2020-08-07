@@ -1,6 +1,8 @@
 
 Utility:
 
+• -shutdown
+• -restart
 • -github
 • -uptime
 • -botinfo
@@ -18,6 +20,8 @@ Fun:
 • -8ball
 • -trustfall
 • -catch
+• -rng
+• -roll
 
 Useful:
 • -temp
@@ -53,7 +57,6 @@ RP:
 • -psspss
 • -rage
 • -reee
-• -rng
 • -scream
 • -shocked
 • -shrekapproves

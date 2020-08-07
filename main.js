@@ -6,7 +6,7 @@ const axios = require('axios');
 const FormData = require("form-data");
 const {promisify} = require('util');
 const readFileAsync = promisify(fs.readFile);
-const version = "version 0.1";
+const version = "version 1.0.2";
 const moderators = ["CinchBot", "TheDefault1"];
 const {
 	CookieJar
@@ -144,6 +144,7 @@ let memesMessage = async (count, channelUrl, channel) => {
 let currentAnswer = {};
 let timeOfSendingOfLastTrivia = {};
 let currentTrustfaller = {};
+let msgNotAvb = "I'm sorry, this feature is currently unavailable.";
 let triviaMessage = "TRIVIA!" + os.EOL + "Category: %(CATEGORY)" + os.EOL + "Difficulty: %(DIFFICULTY)" + os.EOL + "Question: %(QUESTION)" + os.EOL + "%(ANSWERS)";
 ch.onUserJoined = async function(channel, user) {
 	sendMsgWithChannel(channel, `u/${user.nickname} has joined the chat`);
@@ -158,30 +159,30 @@ ch.onMessageReceived = async function(channel, message) {
 	if (messageText.toLowerCase().includes("good bot")) {
 		sendMsgWithChannel(channel, "Thank you!");
 	}
-	if (messageText.startsWith("-")) {
+	if (messageText.startsWith("-") || messageText.startsWith("/")) {
 		let cleanMessageText = messageText.toLowerCase().slice(1).trim();
 		let args = messageText.split(" ").slice(1);
 		let command = cleanMessageText.split(" ")[0];
 		switch (command) {
 			case "setjoinmessage":
 			case "setjoinmsg":
-				sendMsgWithChannel(channel, "I'm sorry, this command is currently unavailable.");	
+				sendMsgWithChannel(channel, msgNotAvb);	
 				break;
 			case "setexitmessage":
 			case "setexitmsg":
-				sendMsgWithChannel(channel, "I'm sorry, this command is currently unavailable.");
+				sendMsgWithChannel(channel, msgNotAvb);
 				break;
 			case "quote":
-				sendMsgWithChannel(channel, "I'm sorry, this command is currently unavailable.")
+				sendMsgWithChannel(channel, msgNotAvb);
 				break;
 			case "addquote":
-				sendMsgWithChannel(channel, "I'm sorry, this command is currently unavailable.");
+				sendMsgWithChannel(channel, msgNotAvb);
 				break;
 			case "rules":
-				sendMsgWithChannel(channel, "I'm sorry, this command is currently unavailable.");
+				sendMsgWithChannel(channel, msgNotAvb);
 				break;
 			case "setrules":
-				sendMsgWithChannel(channel, "I'm sorry, this command is currently unavailable.");
+				sendMsgWithChannel(channel, msgNotAvb);
 				break;
 			case "id":
 				if (!isUndefined(args[0])) {
@@ -231,7 +232,7 @@ ch.onMessageReceived = async function(channel, message) {
 					break;
 			case "uptime":
 				String.prototype.toHHMMSS = function () {
-					var sec_num = parseInt(this, 10); // don't forget the second param
+					var sec_num = parseInt(this, 10);
 					var hours   = Math.floor(sec_num / 3600);
 					var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
 					var seconds = sec_num - (hours * 3600) - (minutes * 60);
@@ -244,7 +245,7 @@ ch.onMessageReceived = async function(channel, message) {
 				}
 				var time = process.uptime();
 				var uptime = (time + "").toHHMMSS();
-				sendMsgWithChannel(channel, `I've been running for ${uptime} so far`);
+				sendMsgWithChannel(channel, uptime);
 				break;
 			case "temp":
 				var userToGet = stringFromList(args);
@@ -366,6 +367,10 @@ ch.onMessageReceived = async function(channel, message) {
 					sendMsgWithChannel(channel, (!isNaN(parseFloat(args[0])) && !isNaN(parseFloat(args[1]))) ? `Your dice landed on a ${Math.floor((Math.random() * ((parseFloat(args[1])+1)-parseFloat(args[0])))+parseFloat(args[0]))}!` : "These aren't valid numbers!");
 				}
 				break;
+			case "roll":
+			case "dice":
+				sendMsgWithChannel(channel, `Your dice landed on a ${Math.floor((Math.random() * (7 - 1) + 1))}!`);
+				break;
 			default:
 				if (!isUndefined(miscCommands[command.toLowerCase()])) {
 					let returning = miscCommands[command.toLowerCase()][Math.floor(Math.random() * miscCommands[command.toLowerCase()].length)];
@@ -383,10 +388,13 @@ ch.onMessageReceived = async function(channel, message) {
 					returning = returning.replace("%(SENDER)", message._sender.nickname);
 					sendMsgWithChannel(channel, returning);
 				}
-			break;
+				else {
+					sendMsgWithChannel(channel, "Invalid input");
+				}
+				break;
+			}
 		}
 	}
-}
 
 function looksLikeACommand(textToCheck) {
 	switch (textToCheck.charAt(0)) {
