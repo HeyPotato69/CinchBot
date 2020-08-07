@@ -388,9 +388,6 @@ ch.onMessageReceived = async function(channel, message) {
 					returning = returning.replace("%(SENDER)", message._sender.nickname);
 					sendMsgWithChannel(channel, returning);
 				}
-				else {
-					sendMsgWithChannel(channel, "Invalid input");
-				}
 				break;
 			}
 		}
