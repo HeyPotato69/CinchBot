@@ -337,25 +337,25 @@ ch.onMessageReceived = async function(channel, message) {
 				};
 				setTimeout(() => {
 					if (!currentTrustfaller[channel.url].catched) {
-						sendMsgWithChannel(channel, message._sender.nickname + " didn't get catched! Y'all are bad friends");
+						sendMsgWithChannel(channel, message._sender.nickname + " didn't get caught! Y'all are bad friends");
 					}
 					currentTrustfaller[channel.url].hasBeen10Secs = true;
 				}, 10000);
 				break;
 			case "catch":
 				if (isUndefined(currentTrustfaller[channel.url])) {
-					sendMsgWithChannel(channel, message._sender.nickname + " catched abolutely nobody.");
+					sendMsgWithChannel(channel, message._sender.nickname + " caught abolutely nobody.");
 					break;
 				}
 				if (currentTrustfaller[channel.url].hasBeen10Secs || currentTrustfaller[channel.url].catched) {
-					sendMsgWithChannel(channel, message._sender.nickname + " catched abolutely nobody.");
+					sendMsgWithChannel(channel, message._sender.nickname + " caught abolutely nobody.");
 					break;
 				}
 				if (currentTrustfaller[channel.url].name == message._sender.nickname) {
 					sendMsgWithChannel(channel, message._sender.nickname + ", you can't catch yourself!");
 					break;
 				}
-				sendMsgWithChannel(channel, message._sender.nickname + " catched " + currentTrustfaller[channel.url].name + "! Thank god!");
+				sendMsgWithChannel(channel, message._sender.nickname + " caught " + currentTrustfaller[channel.url].name + "! Thank god!");
 				currentTrustfaller[channel.url].catched = true;
 				break;
 			case "rng":
