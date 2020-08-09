@@ -7,7 +7,7 @@
  - run `node main.js`
 
 ## Miscellaneous Command Syntax
-###### Located in ./src/MiscCommands.json
+###### Located in [./src/MiscCommands.json](https://github.com/TheDefault1/CinchBot/blob/master/src/MiscCommands.json)
 
 These are commands that are only in here for fun or small tasks that don't need seperate programming
 
