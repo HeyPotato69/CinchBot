@@ -1,34 +1,35 @@
 require('dotenv').config();
+const FormData = require("form-data");
 const sendbird = require('sendbird');
 const os = require('os');
 const fs = require('fs');
-const axios = require('axios');
-const FormData = require("form-data");
 const {promisify} = require('util');
+const {CookieJar} = require("tough-cookie");
 const readFileAsync = promisify(fs.readFile);
-const version = "version 1.0.2";
-const moderators = ["CinchBot", "TheDefault1"];
-const {
-	CookieJar
-} = require("tough-cookie");
+const axios = require('axios');
 const got = require("got");
-const { SSL_OP_EPHEMERAL_RSA } = require('constants');
+const {SSL_OP_EPHEMERAL_RSA} = require('constants');
+const moderators = ["CinchBot", "TheDefault1"];
+const version = "1.0.2";
+var today = new Date();
 
-// Launch
-let credentials = {
-	userid: process.env.REDDIT_ID,
-	username: process.env.REDDIT_USER,
-	passwd: process.env.REDDIT_PASS,
+let config = {
+    username: process.env.username,
+    password: process.env.password,
+    userid: process.env.userId,
+    prefix: process.env.prefix,
+    toggleLeaveJoinMsgs: process.env.leaveJoinMsgs
 };
-let sb = new sendbird({
-	appId: "2515BDA8-9D3A-47CF-9325-330BC37ADA13"
-});
+let sb = new sendbird({appId: "2515BDA8-9D3A-47CF-9325-330BC37ADA13"});
+let ch = new sb.ChannelHandler();
+
 const form = new FormData();
-form.append("user", credentials.username);
-form.append("passwd", credentials.passwd);
+form.append("user", config.username);
+form.append("passwd", config.password);
 form.append("api_type", "json");
 
-console.log("Connecting to sendbird...");
+// Launch
+console.log("Launching...");
 got.post({
 	body: form,
 	url: "https://ssl.reddit.com/api/login",
@@ -41,23 +42,22 @@ got.post({
 		url: "https://s.reddit.com/api/v1/sendbird/me",
 	}).then(sbRes => {
 		const sbInfo = JSON.parse(sbRes.body);
-		sb.connect(credentials.userid, sbInfo.sb_access_token).then(userInfo => {
-			console.log("Successfully connected to sendbird with u/" + userInfo.nickname + "!");
+		sb.connect(config.userid, sbInfo.sb_access_token).then(userInfo => {
+			console.log("Online!");
 		}).catch(err => {
-			console.error("Error while trying to connect to sendbird. Error: " + err);
+			console.error(`Error while trying to connect to sendbird. Error: ${err}`);
 		});
 	}).catch(err => {
-		console.error("Error while trying to get access token. Error: " + err);
+		console.error(`Error while trying to get access token. Error: ${err}`);
 	});
 }).catch(err => {
-	console.error("Error while trying to get session token. Error: " + err);
+	console.error(`Error while trying to get session token. Error: ${err}`);
 });
 
 // Data
 let miscCommands = JSON.parse(fs.readFileSync("src/MiscCommands.json"));
 var helpMessages = fs.readFileSync("data/help.txt", encoding = "utf8").split("SPLITHERE");
 let newsMessageMessage = "Hottest news of the day: " + os.EOL + os.EOL + "%(NEWSMESSAGETITLE)" + os.EOL + os.EOL + "Read more here %(NEWSMESSAGELINKTOPOST)";
-let ch = new sb.ChannelHandler();
 let newsMessage = async (count, channelUrl, channel) => {
 	if (isUndefined(channelUrl)) {
 		let channelListQuery = sb.GroupChannel.createMyGroupChannelListQuery();
@@ -144,6 +144,7 @@ let memesMessage = async (count, channelUrl, channel) => {
 let currentAnswer = {};
 let timeOfSendingOfLastTrivia = {};
 let currentTrustfaller = {};
+let dev = "thedefault1";
 let msgNotAvb = "I'm sorry, this feature is currently unavailable.";
 let triviaMessage = "TRIVIA!" + os.EOL + "Category: %(CATEGORY)" + os.EOL + "Difficulty: %(DIFFICULTY)" + os.EOL + "Question: %(QUESTION)" + os.EOL + "%(ANSWERS)";
 ch.onUserJoined = async function(channel, user) {
@@ -159,7 +160,7 @@ ch.onMessageReceived = async function(channel, message) {
 	if (messageText.toLowerCase().includes("good bot")) {
 		sendMsgWithChannel(channel, "Thank you!");
 	}
-	if (messageText.startsWith("-") || messageText.startsWith("/")) {
+	if (messageText.startsWith("-") || messageText.startsWith(config.prefix)) {
 		let cleanMessageText = messageText.toLowerCase().slice(1).trim();
 		let args = messageText.split(" ").slice(1);
 		let command = cleanMessageText.split(" ")[0];
@@ -184,6 +185,10 @@ ch.onMessageReceived = async function(channel, message) {
 			case "setrules":
 				sendMsgWithChannel(channel, msgNotAvb);
 				break;
+			case "botinfo":
+				var uptime = Math.floor(process.uptime());
+				sendMsg(channel, `A bot by u/TheDefault1\n\nCurrent prefixes: "${config.prefix}" and "-"\nSource code can be found here https://github.com/TheDefault1/CinchBot`);
+				break;
 			case "id":
 				if (!isUndefined(args[0])) {
 					if (args[0].toLowerCase().startsWith("@")) {
@@ -193,14 +198,14 @@ ch.onMessageReceived = async function(channel, message) {
 					}
 					var userToGet = args[0];
 					axios.get(`https://www.reddit.com/user/${userToGet}/about.json`).then((result) => {
-						sendMsgWithChannel(channel, isUndefined(result.data.error) ? `${userToGet}'s reddit ID is: \n${result.data.data.id.split("?")[0]}` : `Couldn't find this person, sorry`);
+						sendMsg(channel, isUndefined(result.data.error) ? `${userToGet}'s reddit ID is: \n${result.data.data.id.split("?")[0]}` : `Couldn't find this person, sorry`);
 					});
-				}else {
-					sendMsgWithChannel(channel, `Your reddit ID is: ${message._sender.userId}`);
-				}
+				}else if (isUndefined(args[0])) {
+					sendMsg(channel, `Your reddit ID is: ${message._sender.userId}`);
+                }
 				break;
 			case "restart":
-				if ("thedefault1".includes(message._sender.nickname.toLowerCase())) {
+				if (dev.includes(message._sender.nickname.toLowerCase())) {
 					sendMsgWithChannel(channel, "Restarting...");
 					console.log(`Restarting ${userInfo.nickname}...\npid: ${process.pid}`);
 					setTimeout(function () {
@@ -221,7 +226,7 @@ ch.onMessageReceived = async function(channel, message) {
 				}
 				break;
 			case "shutdown":
-				if ("thedefault1".includes(message._sender.nickname.toLowerCase())) {
+				if (dev.includes(message._sender.nickname.toLowerCase())) {
 					sendMsgWithChannel(channel, "Shutting down...");
 					setTimeout(() => {  process.exit(1) }, 1500);
 					break;
@@ -287,6 +292,142 @@ ch.onMessageReceived = async function(channel, message) {
 					sendMsgWithChannel(channel, "Invalid argument");
 				}
 				break;
+			case "stab":
+				if (!isUndefined(args[0])) {
+						if (args[0].toLowerCase().startsWith("@")) {
+							args[0] = args[0].slice(1);
+						} else if (args[0].toLowerCase().startsWith("u/")) {
+							args[0] = args[0].slice(2);
+						}
+						var userToGet = args[0];
+						axios.get(`https://www.reddit.com/user/${userToGet}/about.json`).then((result) => {
+							sendMsgWithChannel(channel, isUndefined(result.data.error) ? `u/${message._sender.nickname} stabbed u/${userToGet}! That's kinda anti-vibes ngl.` : `That is not a user.`);
+						});
+					}else if (isUndefined(args[0])) {
+						sendMsgWithChannel(channel, `u/${userToGet} did not specify who to stab, so they ended up stabbing themselves. F`);
+					}
+				break;
+			case "hug":
+				if (!isUndefined(args[0])) {
+						if (args[0].toLowerCase().startsWith("@")) {
+							args[0] = args[0].slice(1);
+						} else if (args[0].toLowerCase().startsWith("u/")) {
+							args[0] = args[0].slice(2);
+						}
+						var userToGet = args[0];
+						axios.get(`https://www.reddit.com/user/${userToGet}/about.json`).then((result) => {
+							sendMsgWithChannel(channel, isUndefined(result.data.error) ? `u/${message._sender.nickname} hugs u/${userToGet} with all the affection they have!` : `That is not a user.`);
+						});
+					}else if (isUndefined(args[0])) {
+						sendMsgWithChannel(channel, `u/${message._sender.nickname} hugged absolutely nobody! Maybe next time they will specify the user the want to hug.`);
+					}
+				break;
+			case "weeb":
+				if (!isUndefined(args[0])) {
+						if (args[0].toLowerCase().startsWith("@")) {
+							args[0] = args[0].slice(1);
+						} else if (args[0].toLowerCase().startsWith("u/")) {
+							args[0] = args[0].slice(2);
+						}
+						var userToGet = args[0];
+						axios.get(`https://www.reddit.com/user/${userToGet}/about.json`).then((result) => {
+							sendMsgWithChannel(channel, isUndefined(result.data.error) ? `Ew! u/${message._sender.nickname} caught a weeb! They are u/${userToGet}!` : `That is not a user.`);
+						});
+					}else if (isUndefined(args[0])) {
+						sendMsgWithChannel(channel, `u/${message._sender.nickname} didn't catch anyone. Maybe they are the weeb?`);
+					}
+				break;
+			case "snowball":
+				if (!isUndefined(args[0])) {
+						if (args[0].toLowerCase().startsWith("@")) {
+							args[0] = args[0].slice(1);
+						} else if (args[0].toLowerCase().startsWith("u/")) {
+							args[0] = args[0].slice(2);
+						}
+						var userToGet = args[0];
+						axios.get(`https://www.reddit.com/user/${userToGet}/about.json`).then((result) => {
+							sendMsgWithChannel(channel, isUndefined(result.data.error) ? `Ouch! u/${message._sender.nickname} threw a snowball at u/${userToGet}!` : `That is not a user.`);
+						});
+					}else if (isUndefined(args[0])) {
+						sendMsgWithChannel(channel, `u/${message._sender.nickname} missed! Maybe next time they will specify the user the want to launch a snowball at.`);
+					}
+				break;
+			case "hornyjail":
+				if (!isUndefined(args[0])) {
+						if (args[0].toLowerCase().startsWith("@")) {
+							args[0] = args[0].slice(1);
+						} else if (args[0].toLowerCase().startsWith("u/")) {
+							args[0] = args[0].slice(2);
+						}
+						var userToGet = args[0];
+						axios.get(`https://www.reddit.com/user/${userToGet}/about.json`).then((result) => {
+							sendMsgWithChannel(channel, isUndefined(result.data.error) ? `u/${message._sender.nickname} has sent u/${userToGet} to the hornyjail!` : `That is not a user.`);
+						});
+					}else if (isUndefined(args[0])) {
+						sendMsgWithChannel(channel, `u/${message._sender.nickname} didn't specify the user they wanted to send to the horny jail, and got stuck there. F`);
+					}
+				break;
+			case "dropkick":
+				if (!isUndefined(args[0])) {
+						if (args[0].toLowerCase().startsWith("@")) {
+							args[0] = args[0].slice(1);
+						} else if (args[0].toLowerCase().startsWith("u/")) {
+							args[0] = args[0].slice(2);
+						}
+						var userToGet = args[0];
+						axios.get(`https://www.reddit.com/user/${userToGet}/about.json`).then((result) => {
+							sendMsgWithChannel(channel, isUndefined(result.data.error) ? `u/${message._sender.nickname} Drop-Kicks u/${userToGet}! They got hurt a bit too.` : `That is not a user.`);
+						});
+					}else if (isUndefined(args[0])) {
+						sendMsgWithChannel(channel, `u/${message._sender.nickname} broke their leg while trying to drop-kick nobody. Maybe next time they will specify the user they want to drop-kick.`);
+					}
+				break;
+			case "gn":
+			case "goodnight":
+					if (!isUndefined(args[0])) {
+							if (args[0].toLowerCase().startsWith("@")) {
+								args[0] = args[0].slice(1);
+							} else if (args[0].toLowerCase().startsWith("u/")) {
+								args[0] = args[0].slice(2);
+							}
+							var userToGet = args[0];
+							axios.get(`https://www.reddit.com/user/${userToGet}/about.json`).then((result) => {
+								sendMsgWithChannel(channel, isUndefined(result.data.error) ? `u/${message._sender.nickname} tucked  u/${userToGet} and gave them a goodnight kiss!` : `That is not a user.`);
+							});
+						}else if (isUndefined(args[0])) {
+							sendMsgWithChannel(channel, `u/${message._sender.nickname} wishes goodnight to absolutely nobody. Maybe next time they will specify who they want to wish goodnight to.`);
+						}
+					break;
+			case "rip":
+					if (!isUndefined(args[0])) {
+							if (args[0].toLowerCase().startsWith("@")) {
+								args[0] = args[0].slice(1);
+							} else if (args[0].toLowerCase().startsWith("u/")) {
+								args[0] = args[0].slice(2);
+							}
+							var userToGet = args[0];
+							axios.get(`https://www.reddit.com/user/${userToGet}/about.json`).then((result) => {
+								sendMsgWithChannel(channel, isUndefined(result.data.error) ? `RIP u/${userToGet} ${today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()}. They will be missed.` : `That is not a user.`);
+							});
+						}else if (isUndefined(args[0])) {
+							sendMsgWithChannel(channel, `RIP u/${message._sender.nickname} ${today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()}. You will be missed.`);
+						}
+					break;
+			case "fatality":
+					if (!isUndefined(args[0])) {
+							if (args[0].toLowerCase().startsWith("@")) {
+								args[0] = args[0].slice(1);
+							} else if (args[0].toLowerCase().startsWith("u/")) {
+								args[0] = args[0].slice(2);
+							}
+							var userToGet = args[0];
+							axios.get(`https://www.reddit.com/user/${userToGet}/about.json`).then((result) => {
+								sendMsgWithChannel(channel, isUndefined(result.data.error) ? `u/${message._sender.nickname} PERFORMED A FATALITY FINISHER ON u/${userToGet}! Dat boi ded now.` : `That is not a user.`);
+							});
+						}else if (isUndefined(args[0])) {
+							sendMsgWithChannel(channel, `u/${message._sender.nickname} couldn't handle the mana and exploded. Maybe next time they will specify who they wan't to perform the fatality finisher on.`);
+						}
+				break;
 			case "moderators":
 			case "mods":
 				let operatorListQuery = channel.createOperatorListQuery();
@@ -314,10 +455,6 @@ ch.onMessageReceived = async function(channel, message) {
 				break;
 			case "tanswer":
 				tanswer(channel.url, channel);
-				break;
-			case "botinfo":
-				var uptime = Math.floor(process.uptime());
-				sendMsgWithChannel(channel, "A bot by u/TheDefault1. Lighter, safer flavor of TrogloBot.");
 				break;
 			case "commands":
 			case "help":
